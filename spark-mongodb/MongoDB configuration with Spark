@@ -1,0 +1,105 @@
+MongoDB configuration with Spark
+
+Introduction:
+
+The integration of MongoDB and Spark unlocks a world of possibilities for data processing, analysis, and insights. In this article, we will provide a step-by-step guide on how to configure MongoDB and Spark integration, including the necessary commands and requirements. By following these instructions, you’ll be able to harness the combined power of these technologies to enhance your data-driven applications.
+
+Requirements:
+MongoDB: Ensure you have MongoDB installed and running on your system or accessible through a remote server. You can download MongoDB from the official website and follow the installation instructions specific to your operating system.(for Ubuntu you can install MongoDB using the link: https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-ubuntu/)
+Apache Spark: Install Apache Spark on your system or cluster. Download the latest version of Spark from the Apache Spark website and follow the installation guide corresponding to your platform.(you can install Apache Spark using the link: https://spark.apache.org/downloads.html after installation, follow the manual step by step)
+MongoDB Spark Connector: Obtain the MongoDB Spark Connector, which facilitates the integration between Spark and MongoDB. You can download the connector from the official MongoDB website or include it as a dependency in your Spark project using build tools.
+.config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:3.0.1") \
+
+Configuration Steps:
+
+Step 1: Start MongoDB:
+
+Launch your MongoDB instance by executing the following command in a terminal or command prompt:
+
+mongod
+Ensure that MongoDB is up and running before proceeding to the next steps.
+
+Step 2: Launch Spark Shell or Application:
+
+Open a new terminal or command prompt window and start the Spark shell or launch your Spark application using the following command:
+
+spark-shell
+
+Step 3: Configure SparkSession:
+
+In your Spark application or Spark shell, configure the SparkSession to establish the connection with MongoDB. Use the following command to create a SparkSession object:
+
+spark = SparkSession.builder()
+  .appName("MongoDB Spark Connector")
+  .config("spark.mongodb.input.uri", "mongodb://<host>:<port>/<database>.<collection>")
+  .config("spark.mongodb.output.uri", "mongodb://<host>:<port>/<database>.<collection>")
+  #add the confing ofconnection for spark with mongoDB 
+  .getOrCreate()
+Replace <host>, <port>, <database>, and <collection> with your MongoDB connection details.
+
+spark = SparkSession.builder \
+    .appName("Spark_with_mongoDB") \
+    .config("spark.mongodb.input.uri", "mongodb://127.0.0.1/data.reviews") \
+    .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/data.reviews") \
+    .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:3.0.1") \
+    .getOrCreate()
+
+1. spark = SparkSession.builder: Initializes a new SparkSession, which is the entry point to any functionality in Spark.
+2. .appName("Spark_with_mongoDB"): Sets the name of the Spark application to "Spark_with_mongoDB". This name will be displayed in the Spark web UI.
+3. .config("spark.mongodb.input.uri", "mongodb://127.0.0.1/data.reviews"): Configures the MongoDB input URI for Spark. This specifies the MongoDB connection string and the collection to read from.
+4. .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/data.reviews"): Configures the MongoDB output URI for Spark. This specifies the MongoDB connection string and the collection to write to.
+5. .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:3.0.1"): Configures the package dependency for the MongoDB Spark connector. It ensures that the required connector JAR file is loaded during the Spark application's execution.
+6. .getOrCreate(): Retrieves an existing SparkSession or creates a new one if it doesn't exist. This line concludes the construction of the SparkSession object.
+
+Input CSV file into MongoDB using Spark:
+
+Import the Spark session:
+
+from pyspark.sql import SparkSession
+
+Create the Spark session Along with the Mongo-Spark connector and input output URI:
+
+spark = SparkSession.builder \
+    .appName("Recommendation system") \
+    .config("spark.mongodb.input.uri", "mongodb://127.0.0.1/data.reviews") \
+    .config("spark.mongodb.output.uri", "mongodb://127.0.0.1/data.reviews") \
+    .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:3.0.1") \
+    .getOrCreate()
+
+Read the CSV using spark from the given path:
+
+# Read the CSV file into a DataFrame
+csv_file_path = "/path/to_your_CSV"
+df = spark.read.csv(csv_file_path, header=True, inferSchema=True)
+
+Save the DF into the mongoDB:
+
+# Save the DataFrame to MongoDB
+df.write.format("mongo").mode("append").save()
+Stop the Spark Session:
+
+# Stop the Spark session
+spark.stop()
+
+To Read back Stored DATA:
+
+Create the Spark Session with the same method:
+
+from pyspark.sql import SparkSession
+
+spark = SparkSession.builder \
+    .appName("Read from MongoDB") \
+    .config("spark.mongodb.input.uri", "mongodb://127.0.0.1/data.reviews") \
+    .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:3.0.1") \
+    .getOrCreate()
+
+Now Read the DATA:
+
+# Read data from MongoDB into a DataFrame
+df = spark.read.format("mongo").load()
+df.printSchema()
+df.show()
+
+Conclusion:
+
+Integrating Apache Spark and MongoDB provides a powerful combination for processing and analyzing large-scale data. The MongoDB Spark Connector acts as a seamless bridge between these technologies, enabling you to extract insights from MongoDB data using Spark’s distributed computing capabilities
